@@ -90,7 +90,12 @@ function handleData(sender, data) {
       if (voteStatus[data.name] === null) {
         voteStatus[data.name] = data.vote;
         updateVoteStatus();
+        broadcast({ type: "vote-status", status: voteStatus });
       }
+      break;
+    case "vote-status":
+      voteStatus = data.status;
+      updateVoteStatus();
       break;
   }
 }
