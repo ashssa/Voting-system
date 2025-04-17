@@ -237,7 +237,21 @@ function exportHistory() {
       const displayVote = vote === null ? "尚未投票" : vote;
       return `  ${name}：${displayVote}`;
     }).join("\n");
-    return `【${v.time}】${v.topic}\n${votes}`;
+
+    // 計算統計數字
+    let agreeCount = 0;
+    let disagreeCount = 0;
+    let abstainCount = 0;
+    let totalCount = 0;
+
+    for (const vote of Object.values(v.result)) {
+      if (vote === "同意") agreeCount++;
+      if (vote === "反對") disagreeCount++;
+      if (vote === "棄權") abstainCount++;
+      if (vote !== null) totalCount++;
+    }
+
+    return `【${v.time}】${v.topic}\n${votes}\n表決結果： 出席：${totalCount} 同意：${agreeCount} 反對：${disagreeCount} 棄權：${abstainCount}`;
   }).join("\n\n");
 
   const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
