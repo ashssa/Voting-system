@@ -169,3 +169,66 @@ li {
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #ddd; /* 淺色水平線 */
 }
+
+/* === 展示頁面 === */
+.display-container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 2rem;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.display-container header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.display-container h1 {
+  font-size: 2rem;
+}
+
+.display-container h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.display-container button {
+  padding: 1rem 2rem;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  border-radius: 5px;
+  margin-top: 2rem;
+}
+
+.display-container button:hover {
+  background: #45a049;
+}
+
+.vote-status-list {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+li {
+  margin: 0.25rem 0;
+}
+
+.agree {
+  color: #38b48b;
+}
+
+.disagree {
+  color: #c9171e;
+}
+
+.abstain {
+  color: #D9A62E;
+}
