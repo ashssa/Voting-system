@@ -1,207 +1,183 @@
-let isHost = location.hash === "#host";
-let peer = new Peer();
-let connToHost = null;
-let connections = [];
-let userName = "";
-let peerId = "";
+let peer;
+let connList = {};
+let myId = "";
+let myName = "";
+let isHost = false;
 let currentTopic = "";
-let hasVoted = false;
-let currentVotes = {};
+let voteStatus = {};
 let voteHistory = [];
+let countdownTimer;
 
-function $(id) {
-  return document.getElementById(id);
+function updateClock() {
+  const now = new Date();
+  document.getElementById("clock").textContent = now.toLocaleTimeString();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+function generateQRCode(id) {
+  const qrcode = new QRCode(document.getElementById("qrcode"), {
+    text: `${location.href}#${id}`,
+    width: 128,
+    height: 128
+  });
 }
 
-peer.on("open", id => {
-  peerId = id;
-  if (isHost) {
-    $("host-controls").classList.remove("hidden");
-    new QRCode("qrcode", location.href.replace("#host", `#${peerId}`));
-  } else if (location.hash.length > 1) {
-    $("join-section").classList.remove("hidden");
-  }
-});
-
-peer.on("connection", conn => {
-  if (isHost) {
-    connections.push(conn);
-    conn.on("data", data => {
-      if (data.type === "join") {
-        conn.userName = data.name;
-        broadcastUserList();
-      } else if (data.type === "vote") {
-        currentVotes[conn.peer] = { name: conn.userName, vote: data.vote };
-        broadcastVoteStatus();
-      }
+function init() {
+  if (location.hash) {
+    myId = "";
+    isHost = false;
+    document.getElementById("join-section").classList.remove("hidden");
+  } else {
+    isHost = true;
+    peer = new Peer();
+    peer.on("open", id => {
+      myId = id;
+      document.getElementById("host-controls").classList.remove("hidden");
+      document.getElementById("voting-section").classList.remove("hidden");
+      generateQRCode(id);
+    });
+    peer.on("connection", conn => {
+      conn.on("data", data => handleData(conn.peer, data));
+      conn.on("open", () => {
+        connList[conn.peer] = conn;
+      });
     });
   }
-});
+}
 
 function join() {
-  userName = $("username").value;
-  if (!userName) return alert("請輸入姓名");
-  const hostId = location.hash.substring(1);
-  connToHost = peer.connect(hostId);
-  connToHost.on("open", () => {
-    connToHost.send({ type: "join", name: userName });
-    $("join-section").classList.add("hidden");
-    $("voting-section").classList.remove("hidden");
-    updateUserList();
+  const hostId = location.hash.slice(1);
+  myName = document.getElementById("username").value.trim();
+  if (!myName) return alert("請輸入姓名");
+  peer = new Peer();
+  peer.on("open", id => {
+    myId = id;
+    const conn = peer.connect(hostId);
+    conn.on("open", () => {
+      connList[hostId] = conn;
+      conn.send({ type: "join", name: myName });
+    });
+    conn.on("data", data => handleData(hostId, data));
   });
-  connToHost.on("data", data => {
-    if (data.type === "topic") {
+  document.getElementById("join-section").classList.add("hidden");
+  document.getElementById("voting-section").classList.remove("hidden");
+}
+
+function handleData(sender, data) {
+  switch (data.type) {
+    case "join":
+      if (!voteStatus[data.name]) voteStatus[data.name] = null;
+      broadcast({ type: "user-list", users: Object.keys(voteStatus) });
+      updateUserList();
+      break;
+    case "user-list":
+      voteStatus = {};
+      data.users.forEach(name => voteStatus[name] = null);
+      updateUserList();
+      updateVoteStatus();
+      break;
+    case "new-topic":
       currentTopic = data.topic;
-      hasVoted = false;
-      $("current-topic").textContent = `議題：${currentTopic}`;
-      resetButtons();
-      resetColors();
-      if (data.duration > 0) {
-        startCountdown(data.duration);
-      } else {
-        $("countdown").textContent = "";
+      voteStatus = {};
+      data.users.forEach(name => voteStatus[name] = null);
+      document.getElementById("current-topic").textContent = currentTopic;
+      updateUserList();
+      updateVoteStatus();
+      startCountdown(data.duration);
+      break;
+    case "vote":
+      if (voteStatus[data.name] === null) {
+        voteStatus[data.name] = data.vote;
+        updateVoteStatus();
       }
-    } else if (data.type === "users") {
-      renderUsers(data.users);
-    } else if (data.type === "votes") {
-      renderVotes(data.votes);
-    }
-  });
+      break;
+  }
+}
+
+function sendVote(choice) {
+  if (!myName || voteStatus[myName] !== null) return;
+  voteStatus[myName] = choice;
+  connList[Object.keys(connList)[0]].send({ type: "vote", name: myName, vote: choice });
+  updateVoteStatus();
+}
+
+function broadcast(msg) {
+  for (const id in connList) {
+    connList[id].send(msg);
+  }
 }
 
 function startTopic() {
-  const topic = $("topic").value;
-  const duration = parseInt($("duration").value);
-  if (!topic) return alert("請輸入議題");
+  const topic = document.getElementById("topic").value.trim();
+  const duration = parseInt(document.getElementById("duration").value.trim());
+  if (!topic || !duration) return alert("請填寫完整");
   currentTopic = topic;
-  currentVotes = {};
-  broadcastAll({
-    type: "topic",
-    topic: topic,
-    duration: duration || 0
-  });
-  voteHistory.push({ topic, votes: {}, timestamp: new Date().toLocaleString() });
-  updateTopicDisplay(topic);
-  resetColors();
-  if (duration > 0) startCountdown(duration);
+  const users = Object.keys(voteStatus);
+  voteStatus = {};
+  users.forEach(name => voteStatus[name] = null);
+  broadcast({ type: "new-topic", topic, duration, users });
+  document.getElementById("current-topic").textContent = currentTopic;
+  updateUserList();
+  updateVoteStatus();
+  startCountdown(duration);
 }
 
-function sendVote(vote) {
-  if (!currentTopic || hasVoted) return;
-  connToHost.send({ type: "vote", vote });
-  hasVoted = true;
-  disableVoteButtons();
-  highlightSelf(vote);
-}
-
-function broadcastAll(data) {
-  connections.forEach(conn => conn.send(data));
-}
-
-function broadcastUserList() {
-  const users = connections.map(c => ({ id: c.peer, name: c.userName }));
-  broadcastAll({ type: "users", users });
-  renderUsers(users);
-}
-
-function broadcastVoteStatus() {
-  broadcastAll({ type: "votes", votes: currentVotes });
-  renderVotes(currentVotes);
-
-  // 記錄進歷史
-  let last = voteHistory[voteHistory.length - 1];
-  if (last) last.votes = JSON.parse(JSON.stringify(currentVotes));
-}
-
-function updateTopicDisplay(topic) {
-  $("current-topic").textContent = `議題：${topic}`;
-}
-
-function renderUsers(users) {
-  $("user-list").innerHTML = "";
-  users.forEach(u => {
+function updateUserList() {
+  const list = document.getElementById("user-list");
+  list.innerHTML = "";
+  for (const name in voteStatus) {
     const li = document.createElement("li");
-    li.textContent = u.name;
-    li.id = `user-${u.id}`;
-    li.className = "user-name";
-    $("user-list").appendChild(li);
-  });
-}
-
-function renderVotes(votes) {
-  $("vote-status").innerHTML = "";
-  for (const peerId in votes) {
-    const { name, vote } = votes[peerId];
-    const li = document.createElement("li");
-    li.textContent = `${name}：${vote}`;
-    $("vote-status").appendChild(li);
-
-    const nameEl = $(`user-${peerId}`);
-    if (nameEl) {
-      nameEl.classList.remove("agree", "disagree", "abstain");
-      if (vote === "同意") nameEl.classList.add("agree");
-      else if (vote === "反對") nameEl.classList.add("disagree");
-      else if (vote === "棄權") nameEl.classList.add("abstain");
-    }
+    li.textContent = name;
+    list.appendChild(li);
   }
 }
 
-function highlightSelf(vote) {
-  const nameEl = $(`user-${peerId}`);
-  if (!nameEl) return;
-  nameEl.classList.remove("agree", "disagree", "abstain");
-  if (vote === "同意") nameEl.classList.add("agree");
-  else if (vote === "反對") nameEl.classList.add("disagree");
-  else if (vote === "棄權") nameEl.classList.add("abstain");
+function updateVoteStatus() {
+  const list = document.getElementById("vote-status");
+  list.innerHTML = "";
+  for (const name in voteStatus) {
+    const li = document.createElement("li");
+    li.textContent = name + "：" + (voteStatus[name] || "尚未投票");
+    li.className = voteStatus[name] === "同意" ? "agree" :
+                   voteStatus[name] === "反對" ? "disagree" :
+                   voteStatus[name] === "棄權" ? "abstain" : "";
+    list.appendChild(li);
+  }
 }
 
-function disableVoteButtons() {
-  document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
-}
-
-function resetButtons() {
-  document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = false);
-}
-
-function resetColors() {
-  document.querySelectorAll(".user-name").forEach(el => {
-    el.classList.remove("agree", "disagree", "abstain");
-  });
-}
-
-function startCountdown(duration) {
-  let remaining = duration;
-  $("countdown").textContent = `剩餘 ${remaining} 秒`;
-  const timer = setInterval(() => {
-    remaining--;
-    $("countdown").textContent = `剩餘 ${remaining} 秒`;
-    if (remaining <= 0) {
-      clearInterval(timer);
-      $("countdown").textContent = "投票結束";
+function startCountdown(seconds) {
+  clearInterval(countdownTimer);
+  const display = document.getElementById("countdown");
+  let timeLeft = seconds;
+  display.textContent = `剩餘時間：${timeLeft} 秒`;
+  countdownTimer = setInterval(() => {
+    timeLeft--;
+    display.textContent = `剩餘時間：${timeLeft} 秒`;
+    if (timeLeft <= 0) {
+      clearInterval(countdownTimer);
+      display.textContent = "投票結束";
+      voteHistory.push({
+        topic: currentTopic,
+        result: { ...voteStatus },
+        time: new Date().toLocaleString()
+      });
     }
   }, 1000);
 }
 
 function exportHistory() {
-  let content = "所有表決記錄\n====================\n\n";
-  voteHistory.forEach(item => {
-    content += `議題：${item.topic}\n時間：${item.timestamp}\n------------------------\n`;
-    for (const id in item.votes) {
-      const { name, vote } = item.votes[id];
-      content += `${name}：${vote}\n`;
-    }
-    content += "------------------------\n\n";
-  });
-
+  const content = voteHistory.map(v => {
+    const votes = Object.entries(v.result).map(([name, vote]) => `  ${name}：${vote}`).join("\n");
+    return `【${v.time}】${v.topic}\n${votes}`;
+  }).join("\n\n");
   const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
+  a.href = url;
   a.download = "vote_history.txt";
   a.click();
+  URL.revokeObjectURL(url);
 }
 
-// 時鐘顯示
-setInterval(() => {
-  const now = new Date();
-  $("clock").textContent = now.toLocaleTimeString();
-}, 1000);
+init();
