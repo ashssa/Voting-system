@@ -188,3 +188,5 @@ function exportHistory() {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+init();
