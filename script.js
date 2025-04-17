@@ -251,7 +251,7 @@ function exportHistory() {
       if (vote !== null) totalCount++;
     }
 
-    return `【${v.time}】${v.topic}\n${votes}\n表決結果： 出席：${totalCount} 同意：${agreeCount} 反對：${disagreeCount} 棄權：${abstainCount}`;
+    return `【${v.time}】${v.topic}\n${votes}\n【表決結果】 出席：${totalCount}人　同意：${agreeCount}人　反對：${disagreeCount}人　棄權：${abstainCount}人\n`;
   }).join("\n\n");
 
   const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
