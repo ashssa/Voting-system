@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>高師大附中學生會 表決展示系統</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="display-container">
+    <header>
+        <h1>高師大附中學生會 表決展示系統</h1>
+        <div class="clock" id="clock"></div>
+    </header>
+
+    <main>
+        <h2 id="meeting-info" class="meeting-topic">尚未設定會議事由</h2>
+        <h2 id="current-topic">尚未有表決議題</h2>
+        <div id="vote-status"></div>
+        <div id="vote-stats"></div>
+
+        <!-- 顯示時間與即時狀態 -->
+        <h3>即時表決狀態</h3>
+        <ul id="vote-status-list"></ul>
+
+        <!-- 全螢幕按鈕 -->
+        <button onclick="toggleFullScreen()">全螢幕</button>
+    </main>
+    </div>
+    <script src="display.js"></script>
+</body>
+</html>
