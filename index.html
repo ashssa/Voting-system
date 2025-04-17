@@ -16,11 +16,16 @@
     </header>
 
     <main>
+      <!-- 主辦人設定 -->
       <div id="host-controls" class="hidden">
-        <input type="text" id="topic" placeholder="輸入表決議題">
-        <input type="number" id="duration" placeholder="時限（秒）">
-        <button onclick="startTopic()">發佈新議題</button>
-        <button onclick="exportHistory()">匯出投票記錄</button>
+        <div class="form-grid">
+          <input type="text" id="meeting-info-input" placeholder="輸入會議事由" class="full-width">
+          <div class="form-row">
+            <input type="text" id="topic" placeholder="輸入表決議題">
+            <input type="number" id="duration" placeholder="時限（秒）">
+            <button onclick="startTopic()">發佈新議題</button>
+            <button onclick="exportHistory()">匯出投票記錄</button>
+          </div>
         <div class="qrcode-container">
           <h3>加入表決</h3>
           <div class="qrcode-wrapper">
@@ -35,6 +40,7 @@
           </div>
         </div>
       </div>
+    </div>
 
       <div id="join-section" class="hidden">
         <input type="text" id="username" placeholder="輸入姓名">
@@ -42,9 +48,10 @@
       </div>
 
       <div id="voting-section" class="hidden">
+        <h2 id="meeting-info" class="meeting-topic">尚未設定會議事由</h2>
         <h2 id="current-topic">尚未有表決議題</h2>
         <div id="countdown"></div>
-        <div class="vote-buttons">
+        <div class="vote-buttons hidden">
           <button class="vote-btn" onclick="sendVote('同意')">同意</button>
           <button class="vote-btn" onclick="sendVote('反對')">反對</button>
           <button class="vote-btn" onclick="sendVote('棄權')">棄權</button>
@@ -53,6 +60,7 @@
         <ul id="user-list"></ul>
         <h3>即時表決狀態</h3>
         <ul id="vote-status"></ul>
+        <div id="vote-stats"></div>
       </div>
     </main>
   </div>

@@ -2,7 +2,7 @@ let peer;
 let connList = {};
 let myId = "";
 let myName = "";
-let isHost = false;
+let role = "";  // "host" 或 "guest"
 let currentTopic = "";
 let voteStatus = {};
 let voteHistory = [];
@@ -25,20 +25,21 @@ function generateQRCode(id) {
 
 function init() {
   if (location.hash) {
-    myId = "";
-    isHost = false;
+    role = "guest"; // 設置角色為參與者
     document.getElementById("join-section").classList.remove("hidden");
   } else {
-    isHost = true;
+    role = "host"; // 設置角色為主持人
     peer = new Peer();
     peer.on("open", id => {
       myId = id;
       document.getElementById("host-controls").classList.remove("hidden");
       document.getElementById("voting-section").classList.remove("hidden");
-        if (isHost) {
-          document.querySelector(".vote-buttons").classList.add("hidden");
-        }
-      
+
+      // 只有主持人不顯示投票按鈕
+      if (role === "host") {
+        document.querySelector(".vote-buttons").classList.add("hidden");
+      }
+
       generateQRCode(id);
     });
     peer.on("connection", conn => {
@@ -51,9 +52,12 @@ function init() {
 }
 
 function join() {
+  role = "guest"; // 設置角色為參與者
+
   const hostId = location.hash.slice(1);
   myName = document.getElementById("username").value.trim();
   if (!myName) return alert("請輸入姓名");
+
   peer = new Peer();
   peer.on("open", id => {
     myId = id;
@@ -64,6 +68,7 @@ function join() {
     });
     conn.on("data", data => handleData(hostId, data));
   });
+
   document.getElementById("join-section").classList.add("hidden");
   document.getElementById("voting-section").classList.remove("hidden");
 }
@@ -83,12 +88,21 @@ function handleData(sender, data) {
       break;
     case "new-topic":
       currentTopic = data.topic;
+      document.getElementById("current-topic").textContent = currentTopic;
+
+      // 顯示會議事由
+      document.getElementById("meeting-info").textContent = `會議事由：${data.meetingInfo}`;
+
       voteStatus = {};
       data.users.forEach(name => voteStatus[name] = null);
-      document.getElementById("current-topic").textContent = currentTopic;
       updateUserList();
       updateVoteStatus();
       startCountdown(data.duration);
+
+      // 只有參與者顯示投票按鈕
+      if (role === "guest") {
+        document.querySelector(".vote-buttons").classList.remove("hidden");
+      }
       break;
     case "vote":
       if (voteStatus[data.name] === null) {
@@ -118,18 +132,32 @@ function broadcast(msg) {
 }
 
 function startTopic() {
-  const topic = document.getElementById("topic").value.trim();
-  const duration = parseInt(document.getElementById("duration").value.trim());
-  if (!topic || !duration) return alert("請填寫完整");
+  const topic = document.getElementById("topic").value.trim();  // 取得表決議題
+  const meetingInfo = document.getElementById("meeting-info-input").value.trim(); // 取得會議事由
+  const duration = parseInt(document.getElementById("duration").value.trim()); // 取得時限
+
+  if (!topic || !duration || !meetingInfo) return alert("請填寫完整");
+
   currentTopic = topic;
   const users = Object.keys(voteStatus);
   voteStatus = {};
   users.forEach(name => voteStatus[name] = null);
-  broadcast({ type: "new-topic", topic, duration, users });
+
+  broadcast({ type: "new-topic", topic, duration, meetingInfo, users });
+
   document.getElementById("current-topic").textContent = currentTopic;
+  document.getElementById("meeting-info").textContent = meetingInfo;
+
   updateUserList();
   updateVoteStatus();
   startCountdown(duration);
+
+  // 只有主持人隱藏投票按鈕
+  if (role === "host") {
+    document.querySelector(".vote-buttons").classList.add("hidden");
+  } else {
+    document.querySelector(".vote-buttons").classList.remove("hidden");
+  }
 }
 
 function updateUserList() {
@@ -145,6 +173,12 @@ function updateUserList() {
 function updateVoteStatus() {
   const list = document.getElementById("vote-status");
   list.innerHTML = "";
+
+  let agreeCount = 0;
+  let disagreeCount = 0;
+  let abstainCount = 0;
+  let totalCount = 0;
+
   for (const name in voteStatus) {
     const li = document.createElement("li");
     li.textContent = name + "：" + (voteStatus[name] || "尚未投票");
@@ -152,7 +186,23 @@ function updateVoteStatus() {
                    voteStatus[name] === "反對" ? "disagree" :
                    voteStatus[name] === "棄權" ? "abstain" : "";
     list.appendChild(li);
+
+    // 计数
+    if (voteStatus[name] === "同意") agreeCount++;
+    if (voteStatus[name] === "反對") disagreeCount++;
+    if (voteStatus[name] === "棄權") abstainCount++;
+    if (voteStatus[name] !== null) totalCount++;
   }
+
+  // 顯示統計數字，並將整個「同意：」等字眼也加上對應顏色
+  const stats = document.getElementById("vote-stats");
+  stats.innerHTML = `
+    <strong>表決結果：</strong><br>　　
+    出席：${totalCount}　
+    <span class="agree">同意：</span><span class="agree">${agreeCount}</span>　
+    <span class="disagree">反對：</span><span class="disagree">${disagreeCount}</span>　
+    <span class="abstain">棄權：</span><span class="abstain">${abstainCount}</span>
+  `;
 }
 
 function startCountdown(seconds) {
@@ -160,17 +210,23 @@ function startCountdown(seconds) {
   const display = document.getElementById("countdown");
   let timeLeft = seconds;
   display.textContent = `剩餘時間：${timeLeft} 秒`;
+
   countdownTimer = setInterval(() => {
     timeLeft--;
     display.textContent = `剩餘時間：${timeLeft} 秒`;
+
     if (timeLeft <= 0) {
       clearInterval(countdownTimer);
       display.textContent = "投票結束";
+
       voteHistory.push({
         topic: currentTopic,
         result: { ...voteStatus },
         time: new Date().toLocaleString()
       });
+
+      // 隱藏投票按鈕
+      document.querySelector(".vote-buttons").classList.add("hidden");
     }
   }, 1000);
 }
@@ -207,7 +263,6 @@ function copyLink() {
     alert("複製失敗：" + err);
   });
 }
-
 
 function toggleQRCode() {
   const qr = document.getElementById("qrcode");
