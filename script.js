@@ -173,9 +173,13 @@ function startCountdown(seconds) {
 
 function exportHistory() {
   const content = voteHistory.map(v => {
-    const votes = Object.entries(v.result).map(([name, vote]) => `  ${name}：${vote}`).join("\n");
+    const votes = Object.entries(v.result).map(([name, vote]) => {
+      const displayVote = vote === null ? "尚未投票" : vote;
+      return `  ${name}：${displayVote}`;
+    }).join("\n");
     return `【${v.time}】${v.topic}\n${votes}`;
   }).join("\n\n");
+
   const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -184,5 +188,3 @@ function exportHistory() {
   a.click();
   URL.revokeObjectURL(url);
 }
-
-init();
