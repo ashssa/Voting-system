@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>P2P 表決系統</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>P2P 表決系統</h1>
+      <div class="clock" id="clock"></div>
+    </header>
+
+    <main>
+      <div id="host-controls" class="hidden">
+        <input type="text" id="topic" placeholder="輸入表決議題">
+        <input type="number" id="duration" placeholder="時限（秒）">
+        <button onclick="startTopic()">發佈新議題</button>
+        <button onclick="exportHistory()">匯出投票記錄</button>
+        <div id="qrcode"></div>
+      </div>
+
+      <div id="join-section" class="hidden">
+        <input type="text" id="username" placeholder="輸入姓名">
+        <button onclick="join()">加入表決</button>
+      </div>
+
+      <div id="voting-section" class="hidden">
+        <h2 id="current-topic">尚未有表決議題</h2>
+        <div id="countdown"></div>
+        <div class="vote-buttons">
+          <button class="vote-btn" onclick="sendVote('同意')">同意</button>
+          <button class="vote-btn" onclick="sendVote('反對')">反對</button>
+          <button class="vote-btn" onclick="sendVote('棄權')">棄權</button>
+        </div>
+        <h3>已登入成員</h3>
+        <ul id="user-list"></ul>
+        <h3>即時表決狀態</h3>
+        <ul id="vote-status"></ul>
+      </div>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
