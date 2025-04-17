@@ -198,11 +198,26 @@ init();
 function copyLink() {
   const link = `${location.href}#${myId}`;
   navigator.clipboard.writeText(link).then(() => {
-    document.getElementById("copy-status").textContent = "已複製！";
+    const status = document.getElementById("copy-status");
+    status.textContent = "已複製！";
     setTimeout(() => {
-      document.getElementById("copy-status").textContent = "";
-    }, 2000);
+      status.textContent = "";
+    }, 2000); // 2 秒後自動清除訊息
   }).catch(err => {
     alert("複製失敗：" + err);
   });
+}
+
+
+function toggleQRCode() {
+  const qr = document.getElementById("qrcode");
+  const btn = document.getElementById("toggle-qrcode");
+  const isHidden = qr.classList.contains("hidden");
+  if (isHidden) {
+    qr.classList.remove("hidden");
+    btn.textContent = "隱藏 QR Code";
+  } else {
+    qr.classList.add("hidden");
+    btn.textContent = "顯示 QR Code";
+  }
 }

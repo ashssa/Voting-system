@@ -1,3 +1,4 @@
+/* === 基本排版 === */
 body {
   font-family: "Segoe UI", sans-serif;
   background: #f4f4f4;
@@ -26,6 +27,7 @@ h1 {
   color: #666;
 }
 
+/* === 表單輸入區 === */
 input {
   padding: 0.5rem;
   margin: 0.25rem;
@@ -37,6 +39,7 @@ button {
   cursor: pointer;
 }
 
+/* === 投票按鈕區 === */
 .vote-buttons {
   margin: 1rem 0;
 }
@@ -45,6 +48,7 @@ button {
   margin-right: 1rem;
 }
 
+/* === 清單樣式 === */
 ul {
   list-style-type: none;
   padding-left: 0;
@@ -54,11 +58,11 @@ li {
   margin: 0.25rem 0;
 }
 
+/* === 狀態類別 === */
 .hidden {
   display: none;
 }
 
-/* 投票顏色 */
 .agree {
   color: #38b48b;
 }
@@ -69,14 +73,29 @@ li {
   color: #D9A62E;
 }
 
-#qrcode-container {
+/* === QR Code 區域 === */
+.qrcode-container {
+  border: 2px solid #ccc;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #fff;
+  margin-top: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.qrcode-container h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  margin-left: 1rem;
+}
+
+.qrcode-wrapper {
   display: flex;
   align-items: center;
-  border: 1px solid #ccc;
-  padding: 1rem;
-  border-radius: 8px;
-  background: #fff;
-  margin-top: 1rem;
+  gap: 1rem;
 }
 
 .qrcode-actions {
@@ -86,11 +105,27 @@ li {
   align-items: flex-start;
 }
 
-#copy-link-btn {
-  margin-bottom: 0.25rem;
+/* === 控制按鈕區（QR Code） === */
+.qrcode-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
+.qrcode-controls button {
+  width: 130px; /* 避免按鈕寬度跳動 */
+}
+
+/* 複製連結區排版 */
+.copy-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* 複製連結狀態 */
 #copy-status {
   color: green;
   font-size: 0.9rem;
+  white-space: nowrap; /* 避免換行 */
 }

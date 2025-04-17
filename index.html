@@ -21,13 +21,19 @@
         <input type="number" id="duration" placeholder="時限（秒）">
         <button onclick="startTopic()">發佈新議題</button>
         <button onclick="exportHistory()">匯出投票記錄</button>
-        <div id="qrcode-container">
-          <div id="qrcode"></div>
-          <div class="qrcode-actions">
-            <button id="copy-link-btn" onclick="copyLink()">複製連結</button>
-            <span id="copy-status"></span>
+        <div class="qrcode-container">
+          <h3>加入表決</h3>
+          <div class="qrcode-wrapper">
+            <div id="qrcode" class="hidden"></div>
+            <div class="qrcode-controls">
+              <button id="toggle-qrcode" onclick="toggleQRCode()">顯示 QR Code</button>
+              <div class="copy-row">
+                <button onclick="copyLink()">複製連結</button>
+                <span id="copy-status"></span>
+              </div>
+            </div>
           </div>
-        </div>        
+        </div>
       </div>
 
       <div id="join-section" class="hidden">
