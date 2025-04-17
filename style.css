@@ -68,3 +68,29 @@ li {
 .abstain {
   color: #D9A62E;
 }
+
+#qrcode-container {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #fff;
+  margin-top: 1rem;
+}
+
+.qrcode-actions {
+  margin-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#copy-link-btn {
+  margin-bottom: 0.25rem;
+}
+
+#copy-status {
+  color: green;
+  font-size: 0.9rem;
+}

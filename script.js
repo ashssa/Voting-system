@@ -35,6 +35,10 @@ function init() {
       myId = id;
       document.getElementById("host-controls").classList.remove("hidden");
       document.getElementById("voting-section").classList.remove("hidden");
+        if (isHost) {
+          document.querySelector(".vote-buttons").classList.add("hidden");
+        }
+      
       generateQRCode(id);
     });
     peer.on("connection", conn => {
@@ -190,3 +194,15 @@ function exportHistory() {
 }
 
 init();
+
+function copyLink() {
+  const link = `${location.href}#${myId}`;
+  navigator.clipboard.writeText(link).then(() => {
+    document.getElementById("copy-status").textContent = "已複製！";
+    setTimeout(() => {
+      document.getElementById("copy-status").textContent = "";
+    }, 2000);
+  }).catch(err => {
+    alert("複製失敗：" + err);
+  });
+}
