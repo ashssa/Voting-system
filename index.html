@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="高師大附中學生會會議用的即時表決系統，支援 P2P 投票、QR code 加入與紀錄匯出功能。">
   <title>高師大附中學生會 表決系統</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -42,11 +43,13 @@
       </div>
     </div>
 
+      <!-- 加入表決 -->
       <div id="join-section" class="hidden">
         <input type="text" id="username" placeholder="輸入姓名">
         <button onclick="join()">加入表決</button>
       </div>
 
+      <!-- 表決畫面 -->
       <div id="voting-section" class="hidden">
         <h2 id="meeting-info" class="meeting-topic">尚未設定會議事由</h2>
         <h2 id="current-topic">尚未有表決議題</h2>
