@@ -91,7 +91,7 @@ function handleData(sender, data) {
       document.getElementById("current-topic").textContent = currentTopic;
 
       // 顯示會議事由
-      document.getElementById("meeting-info").textContent = `會議事由：${data.meetingInfo}`;
+      document.getElementById("meeting-info").textContent = `${data.meetingInfo}`;
 
       voteStatus = {};
       data.users.forEach(name => voteStatus[name] = null);
