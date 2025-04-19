@@ -251,7 +251,7 @@ function exportHistory() {
       if (vote !== null) totalCount++;
     }
 
-    return `議題｜${v.topic}\n時間｜${v.time}\n------------------------\n出席：${totalCount}人　同意：${agreeCount}人　反對：${disagreeCount}人　棄權：${abstainCount}人\n${votes}\n------------------------`;
+    return `議題｜${v.topic}\n時間｜${v.time}\n結果｜出席：${totalCount}人　同意：${agreeCount}人　反對：${disagreeCount}人　棄權：${abstainCount}人\n------------------------\n${votes}\n------------------------`;
   }).join("\n\n");
 
   const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
