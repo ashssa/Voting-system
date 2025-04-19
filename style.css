@@ -11,6 +11,12 @@ body {
   color: #333;
 }
 
+/* === 一級縮排內文 === */
+#voting-section li, #voting-section div, #vote-stats{
+  padding-left:2em;
+  font-family:"EB Garamond", 'Chiron Sung HK WS', serif;
+}
+
 input[type="text"],
 input[type="number"],
 textarea {
@@ -135,9 +141,6 @@ li {
   margin: 0.25rem 0;
 }
 
-#voting-section li, #voting-section div, #vote-stats{
-  padding-left:2em
-}
 /* === 狀態類別 === */
 .hidden {
   display: none;
