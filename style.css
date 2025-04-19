@@ -1,6 +1,8 @@
 /* === 基本排版 === */
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400..800&display=swap');
+
 body {
-  font-family: "Segoe UI", sans-serif;
+  font-family: "EB Garamond", "Segoe UI", sans-serif;
   background: #f4f4f4;
   margin: 0;
   color: #333;
