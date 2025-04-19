@@ -1,8 +1,9 @@
-/* === 基本排版 === */
+/* === import fonts === */
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400..800&display=swap');
 
+/* === 基本排版 === */
 body {
-  font-family: "EB Garamond", "Segoe UI", sans-serif !important;
+  font-family: "EB Garamond", "Segoe UI", sans-serif;
   background: #f4f4f4;
   margin: 0;
   color: #333;
@@ -26,8 +27,8 @@ input[type="text"]:focus,
 input[type="number"]:focus,
 textarea:focus {
   outline: none; /* 移除預設 focus 樣式 */
-  border-color: #007bff; /* focus 時的邊框顏色 */
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* focus 時的陰影效果 */
+  border-color: #666666; /* focus 時的邊框顏色 */
+  /*box-shadow: 0 0 2px #666666; /* focus 時的陰影效果 */
 }
 
 button {
