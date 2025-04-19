@@ -17,6 +17,7 @@ body {
   font-family:"EB Garamond", 'Chiron Sung HK WS', serif;
 }
 
+/* === 互動元件 === */
 input[type="text"],
 input[type="number"],
 textarea {
@@ -25,7 +26,8 @@ textarea {
   border: 1px solid #ccc;
   border-radius: 5px;
   /*background-color: #f0f0f0;*/
-  font-family: inherit; /* 繼承 body 的字體 */
+  /*font-family: inherit; /* 繼承 body 的字體 */
+  font-family:"EB Garamond", 'Chiron Sung HK WS', serif;
   font-size: 1rem;
   color: #333;
   box-sizing: border-box; /* 確保 padding 和 border 不會增加元素尺寸 */
@@ -46,7 +48,8 @@ button {
   border-radius: 5px;
   background-color: #f0f0f0;
   color: #333;
-  font-family: inherit; /* 繼承 body 的字體 */
+  /*font-family: inherit; /* 繼承 body 的字體 */
+  font-family:"EB Garamond", 'Chiron Sung HK WS', serif;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease; /* hover 動畫 */
@@ -80,6 +83,8 @@ h1 {
 .clock {
   font-size: 1rem;
   color: #666;
+  font-family:"EB Garamond", 'Chiron Sung HK WS', serif;
+  font-weight: 600;
 }
 
 /* === 主辦人控制 === */
