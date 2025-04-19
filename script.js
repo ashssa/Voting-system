@@ -197,8 +197,8 @@ function updateVoteStatus() {
   // 顯示統計數字，並將整個「同意：」等字眼也加上對應顏色
   const stats = document.getElementById("vote-stats");
   stats.innerHTML = `
-    <strong>表決結果：</strong><br>　　
-    出席：${totalCount}　
+    <strong>表決結果：</strong><br>
+    　　出席：${totalCount}　
     <span class="agree">同意：</span><span class="agree">${agreeCount}</span>　
     <span class="disagree">反對：</span><span class="disagree">${disagreeCount}</span>　
     <span class="abstain">棄權：</span><span class="abstain">${abstainCount}</span>

@@ -133,6 +133,9 @@ li {
   margin: 0.25rem 0;
 }
 
+#voting-section li, #voting-section div, #vote-stats{
+  padding-left:2em
+}
 /* === 狀態類別 === */
 .hidden {
   display: none;
