@@ -14,7 +14,8 @@ function connectToHost(hostId) {
   peer = new Peer();
 
   peer.on("open", id => {
-    conn = peer.connect(hostId);
+    // 在這裡加入 metadata: "display"
+    conn = peer.connect(hostId, { metadata: "display" });
 
     conn.on("open", () => {
       console.log("已連接至主持人");

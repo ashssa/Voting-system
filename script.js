@@ -43,27 +43,31 @@ function init() {
 
       generateQRCode(id);
     });
+    
     peer.on("connection", conn => {
       conn.on("data", data => handleData(conn.peer, data));
       conn.on("open", () => {
-        connList[conn.peer] = conn;
+        if (conn.metadata === "display") {
+          displayConnection = conn;  // 保存展示端的連線
+          console.log("展示端已連線");
+        } else {
+          connList[conn.peer] = conn;  // 其他用戶連線
+        }
       });
     });
-  }
+    }
 }
 
 function openDisplayWindow() {
   if (!myId) return alert("尚未取得主持人 ID");
-  // 修改：將開啟 display window 的功能改為使用 PeerJS 進行連線
-  displayConnection = peer.connect(myId);  // 使用自己的 ID 與 display 進行連線
-  displayConnection.on("open", () => {
-    // 一旦連線開啟，就可以開始傳送資料
-    console.log("Display 連線已開啟");
-  });
-  displayConnection.on("data", data => {
-    // 處理來自 display 的資料
-    handleData(myId, data);
-  });
+  const url = `${location.origin}${location.pathname.replace("index.html", "")}display.html?hostId=${myId}`;
+  window.open(url, "_blank");
+}
+
+function sendToDisplay(data) {
+  if (displayConnection && displayConnection.open) {
+    displayConnection.send(data);
+  }
 }
 
 function join() {
@@ -92,6 +96,7 @@ function handleData(sender, data) {
   switch (data.type) {
     case "join":
       if (!voteStatus[data.name]) voteStatus[data.name] = null;
+      sendToDisplay({ type: "user-list", users: Object.keys(voteStatus) });
       broadcast({ type: "user-list", users: Object.keys(voteStatus) });
       updateUserList();
       break;
@@ -146,6 +151,10 @@ function sendVote(choice) {
   if (!myName || voteStatus[myName] !== null) return;
   voteStatus[myName] = choice;
   connList[Object.keys(connList)[0]].send({ type: "vote", name: myName, vote: choice });
+  sendToDisplay({
+    type: "vote-status",
+    status: voteStatus
+  });  
   updateVoteStatus();
 }
 
@@ -168,7 +177,15 @@ function startTopic() {
   users.forEach(name => voteStatus[name] = null);
 
   const payload = { type: "new-topic", topic, duration, meetingInfo, users };
-  broadcast(payload);
+  broadcast(payload)
+  sendToDisplay({
+    type: "new-topic",
+    topic,
+    meetingInfo,
+    users: Object.keys(voteStatus),
+    duration
+  });/*or use 'payload'*/
+  ;
 
   // 使用 PeerJS 連線發送資料到 display
   if (displayConnection) {
