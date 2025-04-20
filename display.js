@@ -2,77 +2,126 @@ let peer;
 let conn;
 let voteStatus = {};
 let currentTopic = "";
+let countdownTimer = null;
 
-function initDisplay() {
-  const hostId = location.hash.slice(1);
+// 從 URL 取得 hostId
+function getHostIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("hostId");
+}
+
+function connectToHost(hostId) {
   peer = new Peer();
+
   peer.on("open", id => {
     conn = peer.connect(hostId);
+
     conn.on("open", () => {
-      conn.send({ type: "display-connect" });
+      console.log("已連接至主持人");
     });
-    conn.on("data", data => handleDisplayData(data));
+
+    conn.on("data", data => {
+      handleData(data);
+    });
   });
 }
 
-function handleDisplayData(data) {
+function handleData(data) {
   switch (data.type) {
     case "new-topic":
       currentTopic = data.topic;
-      document.getElementById("current-topic").textContent = currentTopic;
+      document.getElementById("current-topic").textContent = `議題：${currentTopic}`;
       document.getElementById("meeting-info").textContent = `會議事由：${data.meetingInfo}`;
-      updateVoteStatus(data.status);
+
+      voteStatus = {};
+      data.users.forEach(name => voteStatus[name] = null);
+      updateVoteStatus();
+      updateVoteStats();
+      startCountdown(data.duration);
       break;
+
     case "vote-status":
-      updateVoteStatus(data.status);
+      voteStatus = data.status;
+      updateVoteStatus();
+      updateVoteStats();
+      break;
+
+    case "user-list":
+      voteStatus = {};
+      data.users.forEach(name => voteStatus[name] = null);
+      updateVoteStatus();
+      updateVoteStats();
       break;
   }
 }
 
-function updateVoteStatus(status) {
-  voteStatus = status;
-  const list = document.getElementById("vote-status-list");
+function updateVoteStatus() {
+  const list = document.getElementById("vote-status");
   list.innerHTML = "";
-
+/*
   let agreeCount = 0;
   let disagreeCount = 0;
   let abstainCount = 0;
   let totalCount = 0;
-
+*/
   for (const name in voteStatus) {
     const li = document.createElement("li");
-    li.textContent = name + "：" + (voteStatus[name] || "尚未投票");
+    li.textContent = `${name}：${voteStatus[name] || "尚未投票"}`;
     li.className = voteStatus[name] === "同意" ? "agree" :
                    voteStatus[name] === "反對" ? "disagree" :
                    voteStatus[name] === "棄權" ? "abstain" : "";
     list.appendChild(li);
-
-    // 计数
-    if (voteStatus[name] === "同意") agreeCount++;
-    if (voteStatus[name] === "反對") disagreeCount++;
-    if (voteStatus[name] === "棄權") abstainCount++;
-    if (voteStatus[name] !== null) totalCount++;
-    }
-
-  // 顯示統計數字
-    const stats = document.getElementById("vote-stats");
-    stats.innerHTML = `
-    <strong>表決結果：</strong><br>　　
-    出席：${totalCount}　
-    <span class="agree">同意：</span><span class="agree">${agreeCount}</span>　
-    <span class="disagree">反對：</span><span class="disagree">${disagreeCount}</span>　
-    <span class="abstain">棄權：</span><span class="abstain">${abstainCount}</span>
-    `;
+  }
 }
 
-function toggleFullScreen() {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-    } else {
-    if (document.exitFullscreen) {
-        document.exitFullscreen();
-    }
-    }
+function updateVoteStats() {
+  let agree = 0, disagree = 0, abstain = 0, total = 0;
+
+  for (const name in voteStatus) {
+    const vote = voteStatus[name];
+    if (vote === "同意") agree++;
+    if (vote === "反對") disagree++;
+    if (vote === "棄權") abstain++;
+    if (vote !== null) total++;
+  }
+
+  const stats = document.getElementById("vote-stats");
+  stats.innerHTML = `
+    出席：${total}　
+    <span class="agree">同意：</span><span class="agree">${agree}</span>　
+    <span class="disagree">反對：</span><span class="disagree">${disagree}</span>　
+    <span class="abstain">棄權：</span><span class="abstain">${abstain}</span>
+  `;
 }
 
-initDisplay();
+function startCountdown(seconds) {
+  clearInterval(countdownTimer);
+  const display = document.getElementById("countdown");
+  let timeLeft = seconds;
+  display.textContent = `剩餘時間：${timeLeft} 秒`;
+
+  countdownTimer = setInterval(() => {
+    timeLeft--;
+    display.textContent = `剩餘時間：${timeLeft} 秒`;
+
+    if (timeLeft <= 0) {
+      clearInterval(countdownTimer);
+      display.textContent = "投票結束";
+    }
+  }, 1000);
+}
+
+// 支援從 postMessage 傳來的資料
+window.addEventListener("message", (event) => {
+  if (event.origin !== location.origin) return; // 保險：只接受同源資料
+  const data = event.data;
+  handleData(data); // 用同樣的資料處理函數
+});
+
+// 初始化
+const hostId = getHostIdFromUrl();
+if (hostId) {
+  connectToHost(hostId);
+} else {
+  alert("無法取得主持人 ID，請確認網址是否正確");
+}

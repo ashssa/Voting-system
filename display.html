@@ -16,15 +16,17 @@
     <main>
         <h2 id="meeting-info" class="meeting-topic">尚未設定會議事由</h2>
         <h2 id="current-topic">尚未有表決議題</h2>
-        <div id="vote-status"></div>
-        <div id="vote-stats"></div>
-
         <!-- 顯示時間與即時狀態 -->
+        <h3>已登入成員</h3>
+        <ul id="user-list"></ul>
         <h3>即時表決狀態</h3>
-        <ul id="vote-status-list"></ul>
+        <ul id="vote-status"></ul>
+        <!-- 統整表決結果 -->
+        <div id="vote-stats"></div>
 
         <!-- 全螢幕按鈕 -->
         <button onclick="toggleFullScreen()">全螢幕</button>
+        
     </main>
     </div>
     <script src="display.js"></script>

@@ -7,6 +7,7 @@ let currentTopic = "";
 let voteStatus = {};
 let voteHistory = [];
 let countdownTimer;
+let displayConnection = null; // 修改：用來儲存 display 的 Peer 連線
 
 function updateClock() {
   const now = new Date();
@@ -49,6 +50,20 @@ function init() {
       });
     });
   }
+}
+
+function openDisplayWindow() {
+  if (!myId) return alert("尚未取得主持人 ID");
+  // 修改：將開啟 display window 的功能改為使用 PeerJS 進行連線
+  displayConnection = peer.connect(myId);  // 使用自己的 ID 與 display 進行連線
+  displayConnection.on("open", () => {
+    // 一旦連線開啟，就可以開始傳送資料
+    console.log("Display 連線已開啟");
+  });
+  displayConnection.on("data", data => {
+    // 處理來自 display 的資料
+    handleData(myId, data);
+  });
 }
 
 function join() {
@@ -103,6 +118,11 @@ function handleData(sender, data) {
       if (role === "guest") {
         document.querySelector(".vote-buttons").classList.remove("hidden");
       }
+
+      // 使用 PeerJS 連線發送資料到 display
+      if (displayConnection) {
+        displayConnection.send(data);
+      }
       break;
     case "vote":
       if (voteStatus[data.name] === null) {
@@ -115,6 +135,10 @@ function handleData(sender, data) {
       voteStatus = data.status;
       updateVoteStatus();
       break;
+  }
+
+  if (displayConnection) {
+    displayConnection.send(data);  // 發送更新到 display
   }
 }
 
@@ -143,7 +167,13 @@ function startTopic() {
   voteStatus = {};
   users.forEach(name => voteStatus[name] = null);
 
-  broadcast({ type: "new-topic", topic, duration, meetingInfo, users });
+  const payload = { type: "new-topic", topic, duration, meetingInfo, users };
+  broadcast(payload);
+
+  // 使用 PeerJS 連線發送資料到 display
+  if (displayConnection) {
+    displayConnection.send(payload);
+  }
 
   document.getElementById("current-topic").textContent = currentTopic;
   document.getElementById("meeting-info").textContent = meetingInfo;
